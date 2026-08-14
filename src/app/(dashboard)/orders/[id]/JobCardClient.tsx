@@ -8,6 +8,17 @@ import { RLABELS } from '@/lib/operations';
 export default function JobCardClient({ order, linkedOperations }: { order: any, linkedOperations?: any[] }) {
   const router = useRouter();
   const [article, setArticle] = useState(order);
+
+  const uploadToStorage = async (file: File, folder: string = 'general'): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('path', folder);
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('Upload failed');
+    const data = await res.json();
+    return data.url;
+  };
+
   const [role, setRole] = useState('admin');
   const [loadingStep, setLoadingStep] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
@@ -146,13 +157,7 @@ export default function JobCardClient({ order, linkedOperations }: { order: any,
     setLoadingStep(opId);
     
     try {
-      const newPhotos = await Promise.all(Array.from(files).map(file => {
-        return new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(file);
-        });
-      }));
+      const newPhotos = await Promise.all(Array.from(files).map(file => uploadToStorage(file, `operations/${opId}`)));
 
       const op = article.operations.find((o: any) => o.id === opId);
       let currentPhotos: string[] = [];
@@ -457,16 +462,14 @@ export default function JobCardClient({ order, linkedOperations }: { order: any,
                                 onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if(file) {
-                                    const reader = new FileReader();
-                                    reader.onload = () => {
-                                      setPatternForm({
-                                        ...patternForm, 
-                                        dxfName: file.name, 
-                                        dxfFileStatus: 'Uploaded',
-                                        dxfData: reader.result as string 
-                                      });
-                                    };
-                                    reader.readAsDataURL(file);
+                                    uploadToStorage(file, 'patterns').then(url => {
+                                        setPatternForm({
+                                          ...patternForm, 
+                                          dxfName: file.name, 
+                                          dxfFileStatus: 'Uploaded',
+                                          dxfData: url 
+                                        });
+                                      }).catch(console.error);
                                   }
                                 }}
                               />
@@ -1077,11 +1080,14 @@ export default function JobCardClient({ order, linkedOperations }: { order: any,
                       className="hidden" 
                       onChange={(e) => {
                         if (!e.target.files) return;
-                        Array.from(e.target.files).forEach(file => {
-                          const reader = new FileReader();
-                          reader.onloadend = () => setCompletePhotos(p => [...p, reader.result as string]);
-                          reader.readAsDataURL(file);
-                        });
+                        Array.from(e.target.files).forEach(async file => {
+                            try {
+                              const url = await uploadToStorage(file, `completions/${completeModalOp.id}`);
+                              setCompletePhotos(p => [...p, url]);
+                            } catch(err) {
+                              console.error(err);
+                            }
+                          });
                       }} 
                     />
                   </label>

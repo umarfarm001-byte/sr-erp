@@ -29,6 +29,17 @@ const getSuitableUsers = (allUsers: any[], stepDefaultUser: string) => {
 export default function EditOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  const uploadToStorage = async (file: File, folder: string = 'general'): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('path', folder);
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('Upload failed');
+    const data = await res.json();
+    return data.url;
+  };
+
   const [orderType, setOrderType] = useState('sample');
 
   const [id, setId] = useState('');
@@ -170,20 +181,26 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
   const removeRow = (setter: any, id: number) => setter((prev: any) => prev.filter((item: any) => item.id !== id));
   const updateRow = (setter: any, id: number, field: string, value: string) => setter((prev: any) => prev.map((item: any) => item.id === id ? { ...item, [field]: value } : item));
 
-  const handleRowPhotoUpload = (setter: any, id: number, file: File) => {
-    const reader = new FileReader();
-    reader.onloadend = () => updateRow(setter, id, 'photo', reader.result as string);
-    reader.readAsDataURL(file);
-  };
+  const handleRowPhotoUpload = async (setter: any, id: number, file: File) => {
+      try {
+        const url = await uploadToStorage(file, 'materials');
+        updateRow(setter, id, 'photo', url);
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-  const handleMainPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-    Array.from(e.target.files).forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => setPhotos(p => [...p, reader.result as string]);
-      reader.readAsDataURL(file);
-    });
-  };
+  const handleMainPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!e.target.files) return;
+      Array.from(e.target.files).forEach(async file => {
+        try {
+          const url = await uploadToStorage(file, 'articles');
+          setPhotos(p => [...p, url]);
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    };
 
   const handleToggleStep = (index: number) => {
     const updated = [...selectedSteps];

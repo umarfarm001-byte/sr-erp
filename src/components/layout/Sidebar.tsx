@@ -108,10 +108,10 @@ export default function Sidebar() {
           </div>
         </div>
         <button 
-          onClick={() => {
-            // Simulate logout
-            localStorage.removeItem('erp_role');
-            window.location.href = '/login'; // Or just reload if there is no login page
+          onClick={async () => {
+            localStorage.clear();
+            await fetch('/api/auth/logout', { method: 'POST' });
+            window.location.href = '/login';
           }}
           className="text-slate-400 hover:text-red-500 transition-colors"
           title="Logout"

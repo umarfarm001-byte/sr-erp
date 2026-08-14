@@ -4,7 +4,7 @@ import { Home, Layers, Users, Settings, Database, Activity, Scissors, Shirt, Use
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
-export default function Sidebar() {
+export default function Sidebar({ mobileMenuOpen = false, setMobileMenuOpen = (v: boolean) => {} }: { mobileMenuOpen?: boolean, setMobileMenuOpen?: (v: boolean) => void }) {
   const [currentRole, setCurrentRole] = useState('admin');
   const [users, setUsers] = useState<any[]>([]);
   const [testMode, setTestMode] = useState(false);
@@ -43,15 +43,22 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <aside className="w-64 h-screen bg-white border-r border-slate-200 flex flex-col fixed left-0 top-0">
-      <div className="h-16 flex items-center px-6 border-b border-slate-100">
-        <div className="flex items-center gap-2 text-blue-600 font-black text-xl tracking-tight">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white">ERP</span>
+    <>
+      {/* Mobile Overlay */}
+      <div 
+        className={`md:hidden fixed inset-0 bg-black/50 z-30 transition-opacity duration-300 ${mobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
+        onClick={() => setMobileMenuOpen(false)} 
+      />
+
+      <aside className={`w-64 h-screen bg-white border-r border-slate-200 flex flex-col fixed left-0 top-0 z-40 transform transition-transform duration-300 md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
+          <div className="flex items-center gap-2 text-blue-600 font-black text-xl tracking-tight">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white">ERP</span>
+            </div>
+            SR
           </div>
-          SR
         </div>
-      </div>
       
       <div className="p-4 flex-1 overflow-y-auto">
         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 px-2">Main Menu</div>
@@ -61,6 +68,7 @@ export default function Sidebar() {
               key={item.name} 
               href={item.href}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors font-medium text-sm"
+              onClick={() => setMobileMenuOpen(false)}
             >
               <item.icon size={18} />
               {item.name}
@@ -120,5 +128,6 @@ export default function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   );
 }

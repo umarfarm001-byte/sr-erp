@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(cuid())
+  name       String
+  username   String   @unique
+  password   String   // Hashed
+  role       String   // e.g. admin, director, worker
+  department String?  // e.g. bp_closing, bp_lasting
+  createdAt  DateTime @default(now())
+  dailyProgresses DailyProgress[]
+}
+
+model Article {
+  id           String      @id @default(cuid())
+  serial       String      @unique
+  party        String
+  articleName  String
+  type         String
+  isBulkProd   Boolean     @default(false)
+  deliveryDate String?
+  date         DateTime    @default(now())
+  qty          String?
+  remarks      String?
+  linkedArticleId String?
+  
+  // The following fields correspond to the exhaustive form properties
+  sampleType      String? // e.g. Upper, Counter Moulded, Lasted, Complete Shoe
+  pattern         String? // JSON string for pattern details
+  sizeSystem      String? // e.g. eu, uk, us, mondo
+  sizePairs       String? // JSON string
+  upperMaterials  String? // JSON string
+  liningMaterials String? // JSON string
+  logoLabels      String? // JSON string
+  dringHooks      String? // JSON string
+  lacesTpu        String? // JSON string
+  threads         String? // JSON string
+  insole          String? // JSON string
+  toeCap          String? // JSON string
+  last            String? // JSON string
+  mould           String? // JSON string
+  injectionDetails String? // JSON string
+  packing         String? // JSON string
+  photos          String? // JSON string array of base64 photos
+  extraMaterials  String? // JSON string array for purchaser
+
+  operations   Operation[]
+}
+
+model Operation {
+  id              String   @id @default(cuid())
+  opId            Int      // 1 to 51 mapping
+  name            String
+  status          String   @default("pending") // "pending", "in_progress", "done"
+  targetDate      String?  // The deadline date (YYYY-MM-DD)
+  completedDate   String?  // Actual completion date
+  customRole      String?  // If it's a dynamic custom step
+  assignedUserId  String?  // Specifically assigned user
+  remarks         String?  // Optional comment when marking done
+  photos          String?  // JSON string array of uploaded photos
+  
+  articleId       String
+  article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  dailyProgresses DailyProgress[]
+}
+
+model DailyProgress {
+  id          String    @id @default(cuid())
+  date        DateTime  @default(now())
+  size        String
+  pairs       Int
+  
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  
+  operationId String
+  operation   Operation @relation(fields: [operationId], references: [id], onDelete: Cascade)
+}
+
+model MasterMaterial {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  category  String   // e.g., 'upper', 'lining', 'thread', 'lace'
+  createdAt DateTime @default(now())
+}
+
+model MasterLast {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+}
+
+model MasterCustomer {
+  id   String @id @default(cuid())
+  name String @unique
+}
+
+model MasterArticleCode {
+  id   String @id @default(cuid())
+  code String @unique
+}
+
+model BomHistory {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  articleName String
+  leatherName String
+  patternArea Float    
+  grade       String   
+  wastage     Float    
+  totalSqFt   Float
+  ratePerSqFt Float
+  totalCost   Float
+}
+
+
+model CompanyRecord {
+  id           String   @id @default("default")
+  name         String
+  address      String?
+  contactEmail String?
+  contactPhone String?
+  gstNumber    String?
+  updatedAt    DateTime @updatedAt
+}

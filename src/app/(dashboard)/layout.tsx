@@ -13,7 +13,7 @@ export default function DashboardLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-slate-50 relative">
+    <div className="flex h-screen bg-slate-50 relative overflow-hidden w-full">
       {/* Mobile Menu Toggle Button */}
       <button 
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -25,9 +25,9 @@ export default function DashboardLayout({
       {/* Sidebar with mobile state */}
       <Sidebar mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
       
-      <div className="flex-1 flex flex-col md:pl-64 pl-0">
+      <div className="flex-1 flex flex-col md:pl-64 pl-0 min-w-0 w-full relative">
         <Header />
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden">
           {children}
         </main>
       </div>

@@ -1,6 +1,49 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// Helper to extract material names from JSON strings and save to MasterMaterial
+async function saveMaterialSuggestions(fields: { [category: string]: any }) {
+  const toUpsert: { name: string, category: string }[] = [];
+  
+  for (const [category, jsonString] of Object.entries(fields)) {
+    if (!jsonString) continue;
+    try {
+      const parsed = JSON.parse(jsonString as string);
+      if (Array.isArray(parsed)) {
+        for (const item of parsed) {
+          if (item && item.name && typeof item.name === 'string' && item.name.trim() !== '') {
+            toUpsert.push({ name: item.name.trim(), category });
+          }
+        }
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  const uniqueList = Array.from(new Set(toUpsert.map(u => JSON.stringify(u)))).map(s => JSON.parse(s));
+
+  for (const item of uniqueList) {
+    try {
+      await prisma.masterMaterial.upsert({
+        where: {
+          category_name: {
+            category: item.category,
+            name: item.name
+          }
+        },
+        update: {},
+        create: {
+          category: item.category,
+          name: item.name
+        }
+      });
+    } catch (e) {
+      console.error("Failed to upsert material suggestion:", e);
+    }
+  }
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -30,6 +73,22 @@ export async function PATCH(
       data
     });
 
+    // Save material suggestions in background
+    saveMaterialSuggestions({
+      'Leather Material': data.upperMaterials,
+      'Lining Material': data.liningMaterials,
+      'Extra Material': data.extraMaterials,
+      'Logo/Labels': data.logoLabels,
+      'D-Ring / Hooks': data.dringHooks,
+      'Laces & TPU': data.lacesTpu,
+      'Threads': data.threads,
+      'Insole': data.insole,
+      'Toe Cap / Counter': data.toeCap,
+      'Last': data.last,
+      'Mould': data.mould,
+      'Packing': data.packing
+    });
+
     if (body.selectedSteps && Array.isArray(body.selectedSteps)) {
       const existingOps = await prisma.operation.findMany({ where: { articleId: id } });
       const newOpIds = body.selectedSteps.map((s: any) => s.opId);
@@ -57,7 +116,7 @@ export async function PATCH(
               opId: step.opId,
               name: step.name,
               customRole: step.dept,
-              assignedUserId: step.assignedUserId || `default_${step.dept.toLowerCase()}`,
+              assignedUserId: step.assignedUserId || \`default_\${step.dept.toLowerCase()}\`,
               articleId: id,
               status: "pending"
             }

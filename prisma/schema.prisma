@@ -86,9 +86,11 @@ model DailyProgress {
 
 model MasterMaterial {
   id        String   @id @default(cuid())
-  name      String   @unique
+  name      String   
   category  String   // e.g., 'upper', 'lining', 'thread', 'lace'
   createdAt DateTime @default(now())
+  
+  @@unique([category, name])
 }
 
 model MasterLast {

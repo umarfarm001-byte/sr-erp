@@ -29,6 +29,7 @@ const getSuitableUsers = (allUsers: any[], stepDefaultUser: string) => {
 export default function EditOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
 
   const uploadToStorage = async (file: File, folder: string = 'general'): Promise<string> => {
     const formData = new FormData();
@@ -46,6 +47,19 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
   const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
+    const fetchSuggestions = async () => {
+      try {
+        const res = await fetch('/api/suggestions');
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchSuggestions();
+
     params.then(p => {
       setId(p.id);
       fetch(`/api/articles/${p.id}`)
@@ -265,7 +279,7 @@ export default function EditOrderPage({ params }: { params: Promise<{ id: string
         </div>
         <div className="grid grid-cols-[2fr_1fr_1fr_80px] gap-4 items-start">
           <div className="space-y-3">
-            <input type="text" placeholder="Material Name" className="input-premium py-2 text-sm" value={item.name} onChange={e => updateRow(setter, item.id, 'name', e.target.value)} />
+            <input type="text" placeholder="Material Name" className="input-premium py-2 text-sm" list={`suggestions-${title}`} value={item.name} onChange={e => updateRow(setter, item.id, 'name', e.target.value)} />
             <input type="text" placeholder="Thickness" className="input-premium py-2 text-sm" value={item.thickness} onChange={e => updateRow(setter, item.id, 'thickness', e.target.value)} />
           </div>
           <div>

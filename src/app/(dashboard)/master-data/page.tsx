@@ -6,18 +6,19 @@ import { Database, Trash2, Plus, Search, Layers, Box, Tag, Users, Ruler, Scissor
 const CATEGORIES = [
   { id: 'customer', label: 'Customers / Parties', icon: Users },
   { id: 'articleCode', label: 'Article Codes', icon: Tag },
-  { id: 'last', label: 'Shoe Lasts', icon: Ruler },
-  { id: 'mould', label: 'Moulds & Dies', icon: Box },
+  { id: 'Last', label: 'Shoe Lasts', icon: Ruler },
+  { id: 'Mould', label: 'Moulds & Dies', icon: Box },
   { id: 'pattern', label: 'Patterns', icon: Scissors },
-  { id: 'upper', label: 'Upper Materials (Leather/PU)', icon: Layers },
-  { id: 'lining', label: 'Lining Materials', icon: Layers },
-  { id: 'sole', label: 'Soles', icon: Layers },
-  { id: 'insole', label: 'Insoles', icon: Layers },
-  { id: 'toecap', label: 'Toe Caps / Counters', icon: Layers },
-  { id: 'dring', label: 'D-Rings & Eyelets', icon: Layers },
-  { id: 'logo', label: 'Logos & Labels', icon: Layers },
-  { id: 'lace', label: 'Laces', icon: Layers },
-  { id: 'thread', label: 'Threads', icon: Layers },
+  { id: 'Leather Material', label: 'Upper Materials (Leather/PU)', icon: Layers },
+  { id: 'Lining Material', label: 'Lining Materials', icon: Layers },
+  { id: 'Extra Material', label: 'Extra Materials', icon: Layers },
+  { id: 'Insole', label: 'Insoles', icon: Layers },
+  { id: 'Toe Cap / Counter', label: 'Toe Caps / Counters', icon: Layers },
+  { id: 'D-Ring / Hooks', label: 'D-Rings & Eyelets', icon: Layers },
+  { id: 'Logo/Labels', label: 'Logos & Labels', icon: Layers },
+  { id: 'Laces & TPU', label: 'Laces & TPU', icon: Layers },
+  { id: 'Threads', label: 'Threads', icon: Layers },
+  { id: 'Packing', label: 'Packing Materials', icon: Layers },
 ];
 
 export default function MasterDataPage() {
@@ -38,7 +39,7 @@ export default function MasterDataPage() {
       const parsedData: Record<string, string[]> = {
         customer: json.customers || [],
         articleCode: json.articleCodes || [],
-        last: json.lasts || [],
+        Last: json.lasts || [],
         ...(json.materials || {})
       };
       

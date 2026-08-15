@@ -38,7 +38,7 @@ export async function DELETE(request: Request) {
       await prisma.masterCustomer.deleteMany({ where: { name: value } });
     } else if (type === 'articleCode') {
       await prisma.masterArticleCode.deleteMany({ where: { code: value } });
-    } else if (type === 'last') {
+    } else if (type === 'Last') {
       await prisma.masterLast.deleteMany({ where: { name: value } });
     } else {
       // It's a material category
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     } else if (type === 'articleCode') {
       const exists = await prisma.masterArticleCode.findUnique({ where: { code: value } });
       if (!exists) await prisma.masterArticleCode.create({ data: { code: value } });
-    } else if (type === 'last') {
+    } else if (type === 'Last') {
       const exists = await prisma.masterLast.findUnique({ where: { name: value } });
       if (!exists) await prisma.masterLast.create({ data: { name: value } });
     } else {
